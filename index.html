@@ -1,179 +1,278 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Validador de ejercicios (Web Worker sandbox)</title>
-  <style>
-    :root{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
-    body{margin:0;padding:18px;background:#f7fafc;color:#0f172a}
-    header{display:flex;gap:12px;align-items:center}
-    h1{font-size:18px;margin:0}
-    main{display:grid;grid-template-columns:1fr 420px;gap:16px;margin-top:12px}
-    .card{background:white;border-radius:8px;padding:12px;box-shadow:0 6px 18px rgba(15,23,42,.06)}
-    textarea{width:100%;height:320px;border-radius:6px;padding:10px;border:1px solid #e2e8f0;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace}
-    .controls{display:flex;gap:8px;margin-top:8px}
-    button{cursor:pointer;padding:8px 12px;border-radius:6px;border:0;background:#2563eb;color:white}
-    button.ghost{background:#e2e8f0;color:#0f172a}
-    pre#result{white-space:pre-wrap;background:#0b1220;color:#d1fae5;padding:10px;border-radius:6px;min-height:80px}
-    .meta{font-size:13px;color:#475569}
-    ul{padding-left:18px;margin:6px 0}
-    .exercise-list{max-height:220px;overflow:auto}
-    .ex-row{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px dashed #f1f5f9}
-    .passed{color:green;font-weight:600}
-    .failed{color:crimson;font-weight:600}
-    .small{font-size:13px;color:#475569}
-    footer{margin-top:12px;font-size:13px;color:#94a3b8}
-  </style>
-  <script src="exercises/basics.js"></script>
-<script src="exercises/arrays.js"></script>
-<script src="exercises/strings.js"></script>
-<script src="exercises/dom.js"></script>
-<script src="exercises/events.js"></script>
-<script src="exercises/json.js"></script>
-  <script src="./exercises/index.js"></script>
-</head>
-<body>
-  <header>
-    <h1>Validador de ejercicios — Worker sandbox</h1>
-    <div class="meta">Aisla el código del alumno dentro de un Web Worker; timeout y pruebas automáticas. Guarda progreso en localStorage.</div>
-  </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Validador de ejercicios (Web Worker sandbox)</title>
+    <style>
+      :root {
+        font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      }
 
-  <main>
-    <section class="card">
-      <h2 id="exercise-title">Cargando ejercicio...</h2>
-      <p id="exercise-desc" class="small"></p>
+      body {
+        margin: 0;
+        padding: 18px;
+        background: #f7fafc;
+        color: #0f172a
+      }
 
-      <textarea id="editor">// Ejemplo: define function sum(a,b) { return a + b }
+      header {
+        display: flex;
+        gap: 12px;
+        align-items: center
+      }
+
+      h1 {
+        font-size: 18px;
+        margin: 0
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 16px;
+        margin-top: 12px
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        padding: 12px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, .06)
+      }
+
+      textarea {
+        width: 100%;
+        height: 320px;
+        border-radius: 6px;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace
+      }
+
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px
+      }
+
+      button {
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 0;
+        background: #2563eb;
+        color: white
+      }
+
+      button.ghost {
+        background: #e2e8f0;
+        color: #0f172a
+      }
+
+      pre#result {
+        white-space: pre-wrap;
+        background: #0b1220;
+        color: #d1fae5;
+        padding: 10px;
+        border-radius: 6px;
+        min-height: 80px
+      }
+
+      .meta {
+        font-size: 13px;
+        color: #475569
+      }
+
+      ul {
+        padding-left: 18px;
+        margin: 6px 0
+      }
+
+      .exercise-list {
+        max-height: 220px;
+        overflow: auto
+      }
+
+      .ex-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 4px;
+        border-bottom: 1px dashed #f1f5f9
+      }
+
+      .passed {
+        color: green;
+        font-weight: 600
+      }
+
+      .failed {
+        color: crimson;
+        font-weight: 600
+      }
+
+      .small {
+        font-size: 13px;
+        color: #475569
+      }
+
+      footer {
+        margin-top: 12px;
+        font-size: 13px;
+        color: #94a3b8
+      }
+
+      .introjs-skipbutton {
+        font-size: 0 !important;
+        /* Oculta el texto */
+        position: relative;
+      }
+
+      .introjs-skipbutton {
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        cursor: pointer;
+      }
+
+      .introjs-skipbutton::after {
+        content: "✕";
+        font-size: 18px;
+        color: #444;
+      }
+    </style>
+    <script src="exercises/basics.js"></script>
+    <script src="exercises/arrays.js"></script>
+    <script src="exercises/strings.js"></script>
+    <script src="exercises/dom.js"></script>
+    <script src="exercises/events.js"></script>
+    <script src="exercises/json.js"></script>
+    <script src="./exercises/index.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css">
+    <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>Validador de ejercicios — Worker sandbox</h1><button id="helpTour" class="ghost">Guía</button><br>
+      <div class="meta">Aisla el código del alumno dentro de un Web Worker; timeout y pruebas automáticas. Guarda progreso en localStorage.</div>
+    </header>
+    <main>
+      <section class="card">
+        <h2 id="exercise-title" data-intro="Este es el título del ejercicio a realizar.">Cargando ejercicio...</h2>
+        <p id="exercise-desc" data-intro="Aquí se muestra la instrucción del ejercicio." class="small"></p><textarea id="editor" data-intro="Aquí debes escribir tu codigo para revisión.">// Ejemplo: define function sum(a,b) { return a + b }
 </textarea>
+        <div class="controls"><button id="runBtn" data-intro="Con este botón puedes probar tu codigo.">Ejecutar y validar</button><button id="resetBtn" class="ghost">Reset editor</button><button id="nextBtn" class="ghost">Siguiente ejercicio</button></div>
+        <h3 style="margin-top:12px">Resultado</h3>
+        <pre id="result" data-intro="Aquí aparece el resultado de la prueba de tu codigo.">—</pre>
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+          <div class="small">Timeout (ms):</div><input id="timeout" type="number" value="1500" style="width:100px;padding:6px;border-radius:6px;border:1px solid #e2e8f0" />
+          <div class="small" style="margin-left:6px">Guardar progreso:</div><button id="clearProgress" class="ghost">Limpiar progreso</button>
+        </div>
+      </section>
+      <aside class="card" data-intro="Aquí se enlistan los ejercicios puedes elegir el que gustes.">
+        <h3>Ejercicios</h3>
+        <div class="exercise-list" id="exerciseList"></div>
+        <h4 style="margin-top:8px">Progreso</h4>
+        <div id="progressText" class="small">0 / 0 completados</div>
+        <hr style="margin:8px 0" />
+        <div class="small">Notas:</div>
+        <ul>
+          <li>Puedes editar los tests en el archivo (const exercises).</li>
+          <li>El código del usuario se ejecuta dentro de un <code>Web Worker</code>.</li>
+          <li>Soporte para HTML virtual simple (DOM simulado).</li>
+        </ul>
+      </aside>
+    </main>
+    <footer class="small">Guarda este archivo como <code>validador.html</code> y ábrelo en tu navegador. Funciona local sin servidor.</footer>
+    <script>
+      //------------------
+      // Storage keys
+      //------------------
+      const STORAGE_KEY = 'validator.progress.v1';
+      //------------------
+      // Helpers
+      //------------------
+      function loadProgress() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        } catch (e) {
+          return {}
+        };
+      }
 
-      <div class="controls">
-        <button id="runBtn">Ejecutar y validar</button>
-        <button id="resetBtn" class="ghost">Reset editor</button>
-        <button id="nextBtn" class="ghost">Siguiente ejercicio</button>
-      </div>
+      function saveProgress(p) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+      }
+      //------------------
+      // UI bindings
+      //------------------
+      let current = 0;
+      const editor = document.getElementById('editor');
+      const resultEl = document.getElementById('result');
+      const runBtn = document.getElementById('runBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const exerciseTitle = document.getElementById('exercise-title');
+      const exerciseDesc = document.getElementById('exercise-desc');
+      const exerciseList = document.getElementById('exerciseList');
+      const timeoutInput = document.getElementById('timeout');
+      const progressText = document.getElementById('progressText');
+      const clearProgressBtn = document.getElementById('clearProgress');
+      let progress = loadProgress();
 
-      <h3 style="margin-top:12px">Resultado</h3>
-      <pre id="result">—</pre>
+      function renderExerciseList() {
+        exerciseList.innerHTML = '';
+        exercises.forEach((ex, i) => {
+          const div = document.createElement('div');
+          div.className = 'ex-row';
+          const left = document.createElement('div');
+          left.innerHTML = `<strong>${ex.title}</strong><div class='small'>${ex.description}</div>`;
+          const right = document.createElement('div');
+          const status = progress[ex.id] ? '<span class="passed">✔</span>' : '<span class="failed">-</span>';
+          right.innerHTML = `${status}`;
+          div.appendChild(left);
+          div.appendChild(right);
+          div.onclick = () => {
+            loadExercise(i);
+          }
+          exerciseList.appendChild(div);
+        })
+        updateProgressUI();
+      }
 
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <div class="small">Timeout (ms):</div>
-        <input id="timeout" type="number" value="1500" style="width:100px;padding:6px;border-radius:6px;border:1px solid #e2e8f0" />
-        <div class="small" style="margin-left:6px">Guardar progreso:</div>
-        <button id="clearProgress" class="ghost">Limpiar progreso</button>
-      </div>
-    </section>
+      function updateProgressUI() {
+        const total = exercises.length;
+        const done = exercises.filter(e => progress[e.id]).length;
+        progressText.innerText = `${done} / ${total} completados`;
+      }
 
-    <aside class="card">
-      <h3>Ejercicios</h3>
-      <div class="exercise-list" id="exerciseList"></div>
-
-      <h4 style="margin-top:8px">Progreso</h4>
-      <div id="progressText" class="small">0 / 0 completados</div>
-
-      <hr style="margin:8px 0" />
-      <div class="small">Notas:</div>
-      <ul>
-        <li>Puedes editar los tests en el archivo (const exercises).</li>
-        <li>El código del usuario se ejecuta dentro de un <code>Web Worker</code>.</li>
-        <li>Soporte para HTML virtual simple (DOM simulado).</li>
-      </ul>
-    </aside>
-  </main>
-
-  <footer class="small">Guarda este archivo como <code>validador.html</code> y ábrelo en tu navegador. Funciona local sin servidor.</footer>
-
-<script>
-
-
-//------------------
-// Storage keys
-//------------------
-const STORAGE_KEY = 'validator.progress.v1';
-
-//------------------
-// Helpers
-//------------------
-function loadProgress(){
-  try{
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-  }catch(e){return {}};
-}
-function saveProgress(p){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
-}
-
-//------------------
-// UI bindings
-//------------------
-let current = 0;
-const editor = document.getElementById('editor');
-const resultEl = document.getElementById('result');
-const runBtn = document.getElementById('runBtn');
-const resetBtn = document.getElementById('resetBtn');
-const nextBtn = document.getElementById('nextBtn');
-const exerciseTitle = document.getElementById('exercise-title');
-const exerciseDesc = document.getElementById('exercise-desc');
-const exerciseList = document.getElementById('exerciseList');
-const timeoutInput = document.getElementById('timeout');
-const progressText = document.getElementById('progressText');
-const clearProgressBtn = document.getElementById('clearProgress');
-
-let progress = loadProgress();
-
-function renderExerciseList(){
-  exerciseList.innerHTML = '';
-  exercises.forEach((ex, i) =>{
-    const div = document.createElement('div');
-    div.className = 'ex-row';
-    const left = document.createElement('div');
-    left.innerHTML = `<strong>${ex.title}</strong><div class='small'>${ex.description}</div>`;
-    const right = document.createElement('div');
-    const status = progress[ex.id] ? '<span class="passed">✔</span>' : '<span class="failed">-</span>';
-    right.innerHTML = `${status}`;
-    div.appendChild(left);
-    div.appendChild(right);
-    div.onclick = () => { loadExercise(i); }
-    exerciseList.appendChild(div);
-  })
-  updateProgressUI();
-}
-
-function updateProgressUI(){
-  const total = exercises.length;
-  const done = exercises.filter(e => progress[e.id]).length;
-  progressText.innerText = `${done} / ${total} completados`;
-}
-
-function loadExercise(index){
-  current = index;
-  const ex = exercises[current];
-  exerciseTitle.innerText = ex.title;
-  exerciseDesc.innerText = ex.description;
-  editor.value = ex.template;
-  resultEl.innerText = '—';
-}
-
-resetBtn.addEventListener('click', ()=> loadExercise(current));
-nextBtn.addEventListener('click', ()=>{
-  current = (current + 1) % exercises.length;
-  loadExercise(current);
-});
-
-clearProgressBtn.addEventListener('click', ()=>{
-  if(confirm('¿Borrar progreso?')){
-    progress = {};
-    saveProgress(progress);
-    renderExerciseList();
-  }
-});
-
-//------------------
-// Worker sandbox logic
-//------------------
-function runUserCode(userCode, tests, timeoutMs, html){
-  return new Promise((resolve, reject) =>{
-    const workerCode = `
+      function loadExercise(index) {
+        current = index;
+        const ex = exercises[current];
+        exerciseTitle.innerText = ex.title;
+        exerciseDesc.innerText = ex.description;
+        editor.value = ex.template;
+        resultEl.innerText = '—';
+      }
+      resetBtn.addEventListener('click', () => loadExercise(current));
+      nextBtn.addEventListener('click', () => {
+        current = (current + 1) % exercises.length;
+        loadExercise(current);
+      });
+      clearProgressBtn.addEventListener('click', () => {
+        if (confirm('¿Borrar progreso?')) {
+          progress = {};
+          saveProgress(progress);
+          renderExerciseList();
+        }
+      });
+      //------------------
+      // Worker sandbox logic
+      //------------------
+      function runUserCode(userCode, tests, timeoutMs, html) {
+        return new Promise((resolve, reject) => {
+          const workerCode = `
       onmessage = function(e){
         const payload = e.data;
         const userCode = payload.code;
@@ -223,73 +322,82 @@ function runUserCode(userCode, tests, timeoutMs, html){
         }
       };
     `;
-
-    const blob = new Blob([workerCode], { type: 'application/javascript' });
-    const workerUrl = URL.createObjectURL(blob);
-    const worker = new Worker(workerUrl);
-
-    const timer = setTimeout(()=>{
-      worker.terminate();
-      URL.revokeObjectURL(workerUrl);
-      resolve({timeout:true});
-    }, timeoutMs);
-
-    worker.onmessage = function(e){
-      clearTimeout(timer);
-      URL.revokeObjectURL(workerUrl);
-      resolve(e.data);
-      worker.terminate();
-    };
-
-    worker.onerror = function(err){
-      clearTimeout(timer);
-      URL.revokeObjectURL(workerUrl);
-      resolve({ok:false, error: err.message || String(err)});
-      worker.terminate();
-    };
-
-    worker.postMessage({ code: userCode, tests, html });
-  });
-}
-
-runBtn.addEventListener('click', async ()=>{
-  const ex = exercises[current];
-  const userCode = editor.value;
-  const timeoutMs = Math.max(200, Number(timeoutInput.value) || 1500);
-  resultEl.innerText = 'Ejecutando...';
-
-  const res = await runUserCode(userCode, ex.tests, timeoutMs, ex.html);
-
-  if(res.timeout){
-    resultEl.innerText = '⏱️ Timeout: el código tardó demasiado y el worker fue terminado.';
-    return;
-  }
-
-  if(!res.ok){
-    resultEl.innerText = '❌ Error ejecutando tu código: ' + (res.error || 'Error desconocido');
-    return;
-  }
-
-  const passed = res.results.filter(r => r.ok).length;
-  const total = res.results.length;
-  let out = `Pruebas: ${passed} / ${total}\n\n`;
-  res.results.forEach((r, i) =>{
-    out += `${r.ok ? '✔' : '✖'} ${r.test}` + (r.error ? ` — error: ${r.error}` : '') + '\n';
-  });
-
-  resultEl.innerText = out;
-
-  if(passed === total){
-    progress[ex.id] = { completedAt: new Date().toISOString() };
-    saveProgress(progress);
-    renderExerciseList();
-  }
-});
-
-// initial render
-renderExerciseList();
-loadExercise(0);
-
-</script>
-</body>
+          const blob = new Blob([workerCode], {
+            type: 'application/javascript'
+          });
+          const workerUrl = URL.createObjectURL(blob);
+          const worker = new Worker(workerUrl);
+          const timer = setTimeout(() => {
+            worker.terminate();
+            URL.revokeObjectURL(workerUrl);
+            resolve({
+              timeout: true
+            });
+          }, timeoutMs);
+          worker.onmessage = function(e) {
+            clearTimeout(timer);
+            URL.revokeObjectURL(workerUrl);
+            resolve(e.data);
+            worker.terminate();
+          };
+          worker.onerror = function(err) {
+            clearTimeout(timer);
+            URL.revokeObjectURL(workerUrl);
+            resolve({
+              ok: false,
+              error: err.message || String(err)
+            });
+            worker.terminate();
+          };
+          worker.postMessage({
+            code: userCode,
+            tests,
+            html
+          });
+        });
+      }
+      runBtn.addEventListener('click', async () => {
+        const ex = exercises[current];
+        const userCode = editor.value;
+        const timeoutMs = Math.max(200, Number(timeoutInput.value) || 1500);
+        resultEl.innerText = 'Ejecutando...';
+        const res = await runUserCode(userCode, ex.tests, timeoutMs, ex.html);
+        if (res.timeout) {
+          resultEl.innerText = '⏱️ Timeout: el código tardó demasiado y el worker fue terminado.';
+          return;
+        }
+        if (!res.ok) {
+          resultEl.innerText = '❌ Error ejecutando tu código: ' + (res.error || 'Error desconocido');
+          return;
+        }
+        const passed = res.results.filter(r => r.ok).length;
+        const total = res.results.length;
+        let out = `Pruebas: ${passed} / ${total}\n\n`;
+        res.results.forEach((r, i) => {
+          out += `${r.ok ? '✔' : '✖'} ${r.test}` + (r.error ? ` — error: ${r.error}` : '') + '\n';
+        });
+        resultEl.innerText = out;
+        if (passed === total) {
+          progress[ex.id] = {
+            completedAt: new Date().toISOString()
+          };
+          saveProgress(progress);
+          renderExerciseList();
+        }
+      });
+      // initial render
+      renderExerciseList();
+      loadExercise(0);
+      document.getElementById('helpTour').addEventListener('click', () => {
+        introJs().setOptions({
+          nextLabel: 'Siguiente',
+          prevLabel: 'Atrás',
+          doneLabel: 'Listo',
+          skipLabel: 'Cerrar',
+          showProgress: true,
+          showBullets: true
+        }).start();
+      });
+    </script>
+  </body>
 </html>
